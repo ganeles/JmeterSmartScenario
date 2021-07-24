@@ -71,11 +71,11 @@
             <stringProp name="Argument.name">profile</stringProp>
             <stringProp name="Argument.value">profile.txt</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
-            <stringProp name="Argument.desc">Файл с профилем. в пути использовать обратные слеши (/), без кавычек!!!</stringProp>
+            <stringProp name="Argument.desc">Файл с профилем. Если указываете полный путь к файлу-используйте прямой слеш (/), без кавычек</stringProp>
           </elementProp>
           <elementProp name="baseline_rampup" elementType="Argument">
             <stringProp name="Argument.name">baseline_rampup</stringProp>
-            <stringProp name="Argument.value">300</stringProp>
+            <stringProp name="Argument.value">30</stringProp>
             <stringProp name="Argument.desc">Время разгона на первую ступень теста (сек)</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
@@ -87,7 +87,7 @@
           </elementProp>
           <elementProp name="baseline_duration" elementType="Argument">
             <stringProp name="Argument.name">baseline_duration</stringProp>
-            <stringProp name="Argument.value">900</stringProp>
+            <stringProp name="Argument.value">60</stringProp>
             <stringProp name="Argument.desc">Длительность первой ступени теста (сек)</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
@@ -118,8 +118,61 @@
         </collectionProp>
       </Arguments>
       <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Глобальные параметры_ConsoleRun" enabled="false">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="profile" elementType="Argument">
+            <stringProp name="Argument.name">profile</stringProp>
+            <stringProp name="Argument.value">profile.txt</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Файл с профилем. в пути использовать обратные слеши (/), без кавычек!!!</stringProp>
+          </elementProp>
+          <elementProp name="baseline_rampup" elementType="Argument">
+            <stringProp name="Argument.name">baseline_rampup</stringProp>
+            <stringProp name="Argument.value">${__P(baseline_rampup,)}</stringProp>
+            <stringProp name="Argument.desc">Время разгона на первую ступень теста (сек)</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="baseline_percent" elementType="Argument">
+            <stringProp name="Argument.name">baseline_percent</stringProp>
+            <stringProp name="Argument.value">${__P(baseline_percent,)}</stringProp>
+            <stringProp name="Argument.desc">Процент от профиля на первой ступени теста</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="baseline_duration" elementType="Argument">
+            <stringProp name="Argument.name">baseline_duration</stringProp>
+            <stringProp name="Argument.value">${__P(baseline_duration,)}</stringProp>
+            <stringProp name="Argument.desc">Длительность первой ступени теста (сек)</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="step_rampup" elementType="Argument">
+            <stringProp name="Argument.name">step_rampup</stringProp>
+            <stringProp name="Argument.value">${__P(step_rampup,)}</stringProp>
+            <stringProp name="Argument.desc">Время разгона на вторую (и следующие) ступени теста (сек)</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="step_percent" elementType="Argument">
+            <stringProp name="Argument.name">step_percent</stringProp>
+            <stringProp name="Argument.value">${__P(step_percent,)}</stringProp>
+            <stringProp name="Argument.desc">Процент от профиля, добавляющийся на второй (и следующих) ступенях теста</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="step_duration" elementType="Argument">
+            <stringProp name="Argument.name">step_duration</stringProp>
+            <stringProp name="Argument.value">${__P(step_duration,)}</stringProp>
+            <stringProp name="Argument.desc">Длительность второй и следующих ступеней теста (сек)</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="LG_Slow" elementType="Argument">
+            <stringProp name="Argument.name">LG_Slow</stringProp>
+            <stringProp name="Argument.value">loadgenerator.domain.local</stringProp>
+            <stringProp name="Argument.desc">Имя нагрузочной станции для низкоинтенсивных скриптов</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </Arguments>
+      <hashTree/>
       <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
-        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <boolProp name="ResultCollector.error_logging">true</boolProp>
         <objProp>
           <name>saveConfig</name>
           <value class="SampleSaveConfiguration">
@@ -192,6 +245,59 @@
         <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
+      <BackendListener guiclass="BackendListenerGui" testclass="BackendListener" testname="Backend Listener" enabled="false">
+        <elementProp name="arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" enabled="true">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="influxdbMetricsSender" elementType="Argument">
+              <stringProp name="Argument.name">influxdbMetricsSender</stringProp>
+              <stringProp name="Argument.value">org.apache.jmeter.visualizers.backend.influxdb.HttpMetricsSender</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="influxdbUrl" elementType="Argument">
+              <stringProp name="Argument.name">influxdbUrl</stringProp>
+              <stringProp name="Argument.value">http://localhost:8086/write?db=jmeter</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="application" elementType="Argument">
+              <stringProp name="Argument.name">application</stringProp>
+              <stringProp name="Argument.value">StartTime ${__groovy(def StartTime = new Date(Long.valueOf(vars.get(&quot;TESTSTART.MS&quot;))).format(&quot;yyyy-MM-dd HH:mm&quot;).toString();return StartTime,)}, Baseline ${baseline_percent}%, Step ${step_percent}%</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="measurement" elementType="Argument">
+              <stringProp name="Argument.name">measurement</stringProp>
+              <stringProp name="Argument.value">jmeter</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="summaryOnly" elementType="Argument">
+              <stringProp name="Argument.name">summaryOnly</stringProp>
+              <stringProp name="Argument.value">false</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="samplersRegex" elementType="Argument">
+              <stringProp name="Argument.name">samplersRegex</stringProp>
+              <stringProp name="Argument.value">^_.+</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="percentiles" elementType="Argument">
+              <stringProp name="Argument.name">percentiles</stringProp>
+              <stringProp name="Argument.value">90;</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="testTitle" elementType="Argument">
+              <stringProp name="Argument.name">testTitle</stringProp>
+              <stringProp name="Argument.value">${__machineName()}, scenario ${__groovy(import org.apache.jmeter.services.FileServer; def scriptName = FileServer.getFileServer().getScriptName(); return scriptName,)},${baseline_rampup} sec rampup, StartTime ${__groovy(def StartTime = new Date(Long.valueOf(vars.get(&quot;TESTSTART.MS&quot;))).format(&quot;yyyy-MM-dd hh:mm&quot;).toString();return StartTime,)}</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="eventTags" elementType="Argument">
+              <stringProp name="Argument.name">eventTags</stringProp>
+              <stringProp name="Argument.value">scenario ${__groovy(import org.apache.jmeter.services.FileServer; def scriptName = FileServer.getFileServer().getScriptName(); return scriptName,)},${baseline_rampup} sec rampup, StartTime ${__groovy(def StartTime = new Date(Long.valueOf(vars.get(&quot;TESTSTART.MS&quot;))).format(&quot;yyyy-MM-dd hh:mm&quot;).toString();return StartTime,)}, Baseline ${baseline_percent}%, Step ${step_percent}%</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </elementProp>
+        <stringProp name="classname">org.apache.jmeter.visualizers.backend.influxdb.InfluxdbBackendListenerClient</stringProp>
+      </BackendListener>
+      <hashTree/>
       <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="setUp Thread Group" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">startnextloop</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
@@ -257,14 +363,14 @@ for (JMeterTreeNode node : guiPackage.getTreeModel().getNodesOfType(Clearable.cl
       </hashTree>
       <kg.apc.jmeter.threads.UltimateThreadGroup guiclass="kg.apc.jmeter.threads.UltimateThreadGroupGui" testclass="kg.apc.jmeter.threads.UltimateThreadGroup" testname="uc_01_Login (низкоинтенсивный - работает только на LG_Slow)" enabled="true">
         <collectionProp name="ultimatethreadgroupdata">
-          <collectionProp name="-368901365">
+          <collectionProp name="517427972">
             <stringProp name="772905175">${__property(uc_01_Login_start)}</stringProp>
             <stringProp name="-1134362062">${__property(1_init_delay)}</stringProp>
             <stringProp name="-1797686081">${__property(baseline_rampup)}</stringProp>
             <stringProp name="491479044">${__property(1_length)}</stringProp>
             <stringProp name="48">0</stringProp>
           </collectionProp>
-          <collectionProp name="1834940182">
+          <collectionProp name="1943511580">
             <stringProp name="-1095843845">${__property(uc_01_Login_add_thread)}</stringProp>
             <stringProp name="-1639920687">${__property(2_init_delay)}</stringProp>
             <stringProp name="2025747992">${__property(step_rampup)}</stringProp>
@@ -314,7 +420,7 @@ for (JMeterTreeNode node : guiPackage.getTreeModel().getNodesOfType(Clearable.cl
         <stringProp name="ThreadGroup.on_sample_error">startnextloop</stringProp>
       </kg.apc.jmeter.threads.UltimateThreadGroup>
       <hashTree>
-        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Once Only Controller" enabled="true"/>
+        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Once Only Controller" enabled="false"/>
         <hashTree>
           <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="RandomPause (чтобы много потоков не начинали работу в один момент)" enabled="false"/>
           <hashTree>
@@ -331,7 +437,7 @@ for (JMeterTreeNode node : guiPackage.getTreeModel().getNodesOfType(Clearable.cl
               <hashTree/>
             </hashTree>
           </hashTree>
-          <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="Низкоинтенсивный скрипт (только на LG_Slow)" enabled="true">
+          <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="Низкоинтенсивный скрипт (только на LG_Slow)" enabled="false">
             <collectionProp name="ModuleController.node_path">
               <stringProp name="764597751">Test Plan</stringProp>
               <stringProp name="764597751">Test Plan</stringProp>
@@ -417,7 +523,7 @@ for (JMeterTreeNode node : guiPackage.getTreeModel().getNodesOfType(Clearable.cl
         <stringProp name="ThreadGroup.on_sample_error">startnextloop</stringProp>
       </kg.apc.jmeter.threads.UltimateThreadGroup>
       <hashTree>
-        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Once Only Controller" enabled="true"/>
+        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Once Only Controller" enabled="false"/>
         <hashTree>
           <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="RandomPause (чтобы много потоков не начинали работу в один момент)" enabled="false"/>
           <hashTree>
@@ -434,7 +540,7 @@ for (JMeterTreeNode node : guiPackage.getTreeModel().getNodesOfType(Clearable.cl
               <hashTree/>
             </hashTree>
           </hashTree>
-          <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="Высокоинтенсивный скрипт (только на LG_Slow)" enabled="true">
+          <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="Высокоинтенсивный скрипт (только на LG_Slow)" enabled="false">
             <collectionProp name="ModuleController.node_path">
               <stringProp name="764597751">Test Plan</stringProp>
               <stringProp name="764597751">Test Plan</stringProp>
@@ -461,59 +567,6 @@ for (JMeterTreeNode node : guiPackage.getTreeModel().getNodesOfType(Clearable.cl
         </IncludeController>
         <hashTree/>
       </hashTree>
-      <BackendListener guiclass="BackendListenerGui" testclass="BackendListener" testname="Backend Listener" enabled="true">
-        <elementProp name="arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" enabled="true">
-          <collectionProp name="Arguments.arguments">
-            <elementProp name="influxdbMetricsSender" elementType="Argument">
-              <stringProp name="Argument.name">influxdbMetricsSender</stringProp>
-              <stringProp name="Argument.value">org.apache.jmeter.visualizers.backend.influxdb.HttpMetricsSender</stringProp>
-              <stringProp name="Argument.metadata">=</stringProp>
-            </elementProp>
-            <elementProp name="influxdbUrl" elementType="Argument">
-              <stringProp name="Argument.name">influxdbUrl</stringProp>
-              <stringProp name="Argument.value">http://localhost:8086/write?db=jmeter</stringProp>
-              <stringProp name="Argument.metadata">=</stringProp>
-            </elementProp>
-            <elementProp name="application" elementType="Argument">
-              <stringProp name="Argument.name">application</stringProp>
-              <stringProp name="Argument.value">StartTime ${__groovy(def StartTime = new Date(Long.valueOf(vars.get(&quot;TESTSTART.MS&quot;))).format(&quot;yyyy-MM-dd HH:mm&quot;).toString();return StartTime,)}, Baseline ${baseline_percent}%, Step ${step_percent}%</stringProp>
-              <stringProp name="Argument.metadata">=</stringProp>
-            </elementProp>
-            <elementProp name="measurement" elementType="Argument">
-              <stringProp name="Argument.name">measurement</stringProp>
-              <stringProp name="Argument.value">jmeter</stringProp>
-              <stringProp name="Argument.metadata">=</stringProp>
-            </elementProp>
-            <elementProp name="summaryOnly" elementType="Argument">
-              <stringProp name="Argument.name">summaryOnly</stringProp>
-              <stringProp name="Argument.value">false</stringProp>
-              <stringProp name="Argument.metadata">=</stringProp>
-            </elementProp>
-            <elementProp name="samplersRegex" elementType="Argument">
-              <stringProp name="Argument.name">samplersRegex</stringProp>
-              <stringProp name="Argument.value">^_|^T.*</stringProp>
-              <stringProp name="Argument.metadata">=</stringProp>
-            </elementProp>
-            <elementProp name="percentiles" elementType="Argument">
-              <stringProp name="Argument.name">percentiles</stringProp>
-              <stringProp name="Argument.value">90;</stringProp>
-              <stringProp name="Argument.metadata">=</stringProp>
-            </elementProp>
-            <elementProp name="testTitle" elementType="Argument">
-              <stringProp name="Argument.name">testTitle</stringProp>
-              <stringProp name="Argument.value">${__machineName()}, scenario ${__groovy(import org.apache.jmeter.services.FileServer; def scriptName = FileServer.getFileServer().getScriptName(); return scriptName,)},${baseline_rampup} sec rampup, StartTime ${__groovy(def StartTime = new Date(Long.valueOf(vars.get(&quot;TESTSTART.MS&quot;))).format(&quot;yyyy-MM-dd hh:mm&quot;).toString();return StartTime,)}</stringProp>
-              <stringProp name="Argument.metadata">=</stringProp>
-            </elementProp>
-            <elementProp name="eventTags" elementType="Argument">
-              <stringProp name="Argument.name">eventTags</stringProp>
-              <stringProp name="Argument.value">scenario ${__groovy(import org.apache.jmeter.services.FileServer; def scriptName = FileServer.getFileServer().getScriptName(); return scriptName,)},${baseline_rampup} sec rampup, StartTime ${__groovy(def StartTime = new Date(Long.valueOf(vars.get(&quot;TESTSTART.MS&quot;))).format(&quot;yyyy-MM-dd hh:mm&quot;).toString();return StartTime,)}, Baseline ${baseline_percent}%, Step ${step_percent}%</stringProp>
-              <stringProp name="Argument.metadata">=</stringProp>
-            </elementProp>
-          </collectionProp>
-        </elementProp>
-        <stringProp name="classname">org.apache.jmeter.visualizers.backend.influxdb.InfluxdbBackendListenerClient</stringProp>
-      </BackendListener>
-      <hashTree/>
       <TestFragmentController guiclass="TestFragmentControllerGui" testclass="TestFragmentController" testname="Test Fragment" enabled="false"/>
       <hashTree>
         <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Низкоинтенсивный скрипт (только на LG_Slow)" enabled="true"/>
@@ -637,88 +690,6 @@ without actual network activity. This helps debugging tests.</stringProp>
           </hashTree>
         </hashTree>
       </hashTree>
-      <ResultCollector guiclass="GraphVisualizer" testclass="ResultCollector" testname="Graph Results" enabled="true">
-        <boolProp name="ResultCollector.error_logging">false</boolProp>
-        <objProp>
-          <name>saveConfig</name>
-          <value class="SampleSaveConfiguration">
-            <time>true</time>
-            <latency>true</latency>
-            <timestamp>true</timestamp>
-            <success>true</success>
-            <label>true</label>
-            <code>true</code>
-            <message>true</message>
-            <threadName>true</threadName>
-            <dataType>true</dataType>
-            <encoding>false</encoding>
-            <assertions>true</assertions>
-            <subresults>true</subresults>
-            <responseData>false</responseData>
-            <samplerData>false</samplerData>
-            <xml>false</xml>
-            <fieldNames>true</fieldNames>
-            <responseHeaders>false</responseHeaders>
-            <requestHeaders>false</requestHeaders>
-            <responseDataOnError>false</responseDataOnError>
-            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
-            <assertionsResultsToSave>0</assertionsResultsToSave>
-            <bytes>true</bytes>
-            <sentBytes>true</sentBytes>
-            <url>true</url>
-            <threadCounts>true</threadCounts>
-            <idleTime>true</idleTime>
-            <connectTime>true</connectTime>
-          </value>
-        </objProp>
-        <stringProp name="filename"></stringProp>
-      </ResultCollector>
-      <hashTree/>
-      <kg.apc.jmeter.vizualizers.CorrectedResultCollector guiclass="kg.apc.jmeter.vizualizers.TransactionsPerSecondGui" testclass="kg.apc.jmeter.vizualizers.CorrectedResultCollector" testname="jp@gc - Transactions per Second" enabled="true">
-        <boolProp name="ResultCollector.error_logging">false</boolProp>
-        <objProp>
-          <name>saveConfig</name>
-          <value class="SampleSaveConfiguration">
-            <time>true</time>
-            <latency>true</latency>
-            <timestamp>true</timestamp>
-            <success>true</success>
-            <label>true</label>
-            <code>true</code>
-            <message>true</message>
-            <threadName>true</threadName>
-            <dataType>true</dataType>
-            <encoding>false</encoding>
-            <assertions>true</assertions>
-            <subresults>true</subresults>
-            <responseData>false</responseData>
-            <samplerData>false</samplerData>
-            <xml>false</xml>
-            <fieldNames>true</fieldNames>
-            <responseHeaders>false</responseHeaders>
-            <requestHeaders>false</requestHeaders>
-            <responseDataOnError>false</responseDataOnError>
-            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
-            <assertionsResultsToSave>0</assertionsResultsToSave>
-            <bytes>true</bytes>
-            <sentBytes>true</sentBytes>
-            <url>true</url>
-            <threadCounts>true</threadCounts>
-            <idleTime>true</idleTime>
-            <connectTime>true</connectTime>
-          </value>
-        </objProp>
-        <stringProp name="filename"></stringProp>
-        <longProp name="interval_grouping">1000</longProp>
-        <boolProp name="graph_aggregated">false</boolProp>
-        <stringProp name="include_sample_labels">_UC.+</stringProp>
-        <stringProp name="exclude_sample_labels"></stringProp>
-        <stringProp name="start_offset"></stringProp>
-        <stringProp name="end_offset"></stringProp>
-        <boolProp name="include_checkbox_state">true</boolProp>
-        <boolProp name="exclude_checkbox_state">false</boolProp>
-      </kg.apc.jmeter.vizualizers.CorrectedResultCollector>
-      <hashTree/>
     </hashTree>
   </hashTree>
 </jmeterTestPlan>
