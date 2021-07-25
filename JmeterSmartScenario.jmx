@@ -16,7 +16,7 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="profile" elementType="Argument">
             <stringProp name="Argument.name">profile</stringProp>
-            <stringProp name="Argument.value">profile.txt</stringProp>
+            <stringProp name="Argument.value">c:/jmeter/profile.txt</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Файл с профилем. в пути использовать обратные слеши (/), без кавычек!!!</stringProp>
           </elementProp>
@@ -69,7 +69,7 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="profile" elementType="Argument">
             <stringProp name="Argument.name">profile</stringProp>
-            <stringProp name="Argument.value">profile.txt</stringProp>
+            <stringProp name="Argument.value">c:/jmeter/profile.txt</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Файл с профилем. Если указываете полный путь к файлу-используйте прямой слеш (/), без кавычек</stringProp>
           </elementProp>
@@ -122,7 +122,7 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="profile" elementType="Argument">
             <stringProp name="Argument.name">profile</stringProp>
-            <stringProp name="Argument.value">profile.txt</stringProp>
+            <stringProp name="Argument.value">c:/jmeter/profile.txt</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Файл с профилем. в пути использовать обратные слеши (/), без кавычек!!!</stringProp>
           </elementProp>
@@ -349,9 +349,244 @@ for (JMeterTreeNode node : guiPackage.getTreeModel().getNodesOfType(Clearable.cl
         <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="JSR223 Sampler - сalc_test_param" enabled="true">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
-          <stringProp name="filename">calc_test_param.groovy</stringProp>
+          <stringProp name="filename"></stringProp>
           <stringProp name="cacheKey">true</stringProp>
-          <stringProp name="script"></stringProp>
+          <stringProp name="script">def names = []
+def iterations = []
+def minPacing = []
+def loadGeneratorsNumber = []
+
+def step_start = []
+def step_finish = []
+
+
+
+steps = 7
+k = 0
+String profile = vars.get(&quot;profile&quot;);
+String file = new File(profile).eachLine() {line, lineNum -&gt;
+
+       if(lineNum == 1) {
+            return
+        }
+
+
+	log.info(&quot;LINE:&quot; + line.toString());
+
+	var0 = &quot;&quot;
+	i = 0
+	
+	while(line[i] != &apos;,&apos;) {
+		var0 += line[i]
+		++i
+	}
+	++i
+	names[k] = var0
+	var0 = &quot;&quot;
+	while(line[i] != &apos;,&apos;) {
+		var0 += line[i]
+		++i
+	}
+	++i
+	iterations[k] = var0.toInteger()
+	var0 = &quot;&quot;
+	while(line[i] != &apos;,&apos;) {
+		var0 += line[i]
+		++i
+	}
+	++i
+	minPacing[k] = Double.parseDouble(var0)
+	var0 = &quot;&quot;
+	while(i != line.size()) {
+		var0 += line[i]
+		++i
+	}
+	loadGeneratorsNumber[k] = var0.toInteger()
+	log.info(&quot;LGNUMBERS:&quot; + loadGeneratorsNumber[k].toString());
+	++k
+}
+ // обнуляем проперти
+props.put(&quot;baseline_rampup&quot;,&quot;0&quot;);
+props.put(&quot;baseline_duration&quot;,&quot;0&quot;);
+props.put(&quot;step_rampup&quot;,&quot;0&quot;);
+props.put(&quot;step_duration&quot;,&quot;0&quot;);
+props.put(&quot;lg_slow&quot;,&quot;0&quot;);
+props.put(&quot;test_lenght&quot;, &quot;0&quot;);
+props.put(&quot;step_start0&quot;, &quot;0&quot;);
+props.put(&quot;step_finish0&quot;, &quot;0&quot;);
+props.put (&quot;step1_duration_in_min&quot;, &quot;0&quot;);
+props.put (&quot;step2-7_duration_in_min&quot;, &quot;0&quot;);
+props.put(&quot;currentStepNumber&quot;,&quot;0&quot;)
+
+for (i = 0; i &lt; names.size(); i++){
+	var1 = names[i] + &quot;_start&quot;
+	props.put(var1, &quot;0&quot;)
+	
+	var2 = names[i] + &quot;_add_thread&quot;
+	props.put(var2, &quot;0&quot;)
+	
+	var3 = names[i] + &quot;_throughtput&quot;
+	props.put(var3, &quot;0&quot;)
+
+	var4 = names[i] + &quot;_load_generators&quot;
+	props.put(var4, &quot;0&quot;)
+
+	props.put(names[i] + &quot;_baseline&quot;, &quot;0&quot;)
+}
+	
+for (i = 1; i &lt;= steps; ++i) {
+	z = steps - i + 1;
+	var4 = z + &quot;_length&quot;	
+	props.put(var4, &quot;0&quot;)
+
+	var5 = i + &quot;_init_delay&quot;	
+	props.put(var5, &quot;0&quot;)
+	
+	if(i!=steps){
+	props.put(&quot;step_start&quot;+i, &quot;0&quot;);
+	props.put(&quot;step_finish&quot;+i, &quot;0&quot;);	
+	}
+}
+	
+
+//расчет ступеней
+baseline_rampup = vars.get(&quot;baseline_rampup&quot;) as int
+baseline_percent = Double.parseDouble(vars.get(&quot;baseline_percent&quot;))/100
+baseline_duration = vars.get(&quot;baseline_duration&quot;) as int
+
+if(vars.get(&quot;step_rampup&quot;).equals(&quot;&quot;)){
+	vars.put(&quot;step_rampup&quot;, &quot;0&quot;);	
+}
+if(vars.get(&quot;step_percent&quot;).equals(&quot;&quot;)){	
+	vars.put(&quot;step_percent&quot;, &quot;0&quot;)
+}
+if(vars.get(&quot;step_duration&quot;).equals(&quot;&quot;)){
+	vars.put(&quot;step_duration&quot;, &quot;0&quot;)
+}
+
+step_rampup = vars.get(&quot;step_rampup&quot;) as int
+step_percent = Double.parseDouble(vars.get(&quot;step_percent&quot;))/100
+step_duration = vars.get(&quot;step_duration&quot;) as int
+lg_slow= vars.get(&quot;lg_slow&quot;) as String
+
+props.put(&quot;baseline_rampup&quot;,String.valueOf(baseline_rampup));
+props.put(&quot;baseline_duration&quot;,String.valueOf(baseline_duration));
+props.put(&quot;step_rampup&quot;,String.valueOf(step_rampup));
+props.put(&quot;step_duration&quot;,String.valueOf(step_duration));
+props.put(&quot;lg_slow&quot;,String.valueOf(lg_slow));
+
+
+for (i = 0; i &lt; names.size(); ++i){
+
+	if (step_percent == 0)
+		minStepLoad = iterations[i] * baseline_percent / loadGeneratorsNumber[i]
+	else
+		minStepLoad = iterations[i] * step_percent / loadGeneratorsNumber[i]
+	oneUserLoadGeneration = 3600 / minPacing[i]
+	minStepVUNumber = (Math.ceil(minStepLoad / oneUserLoadGeneration)).toInteger()
+	oneVUOperationsNumber = minStepLoad / minStepVUNumber
+	
+	oneVUOperationsPerMinNumber = oneVUOperationsNumber / 60
+
+	if (step_percent == 0)
+		baseLineVUNumber = minStepVUNumber.toInteger()
+	else
+		baseLineVUNumber = (minStepVUNumber * (baseline_percent / step_percent)).toInteger()
+
+	log.info(&quot;===========================\n\n\n&quot;);
+	log.info(&quot;threadGroup [&quot; + i + &quot;] - &quot; + names[i])								//имя тредгруппы
+	log.info(&quot;iterations [&quot; + i + &quot;] - &quot; + iterations[i])							//операций в час
+	log.info(&quot;loadGeneratorsNumber [&quot; + i + &quot;] - &quot; + loadGeneratorsNumber[i])		//на какое количество LG делится нагрузка
+	log.info(&quot;step_percent [&quot; + i + &quot;] - &quot; + step_percent)						//процент профиля на ступеньках теста
+	log.info(&quot;minStepLoad [&quot; + i + &quot;] - &quot; + minStepLoad)							//сколько операций/час добавляется на ступеньках
+	log.info(&quot;oneUserLoadGeneration [&quot; + i + &quot;] - &quot; + oneUserLoadGeneration)		//один поток выдаёт операций/час
+	log.info(&quot;minStepVUNumber [&quot; + i + &quot;] - &quot; + minStepVUNumber)					//количество потоков добавляется на ступеньке
+	log.info(&quot;oneVUOperationsPerMinNumber [&quot; + i + &quot;] - &quot; + oneVUOperationsPerMinNumber)	//один поток выдаёт операций/минуту
+	log.info(&quot;baseLineVUNumber [&quot; + i + &quot;] - &quot; + baseLineVUNumber)				//количество потоков на первой ступеньке теста
+	log.info(&quot;\n\n\n&quot;)
+	
+		
+	var1 = names[i] + &quot;_start&quot;
+	props.put(var1, String.valueOf(baseLineVUNumber))
+	
+	var2 = names[i] + &quot;_add_thread&quot;
+	props.put(var2, String.valueOf(minStepVUNumber))
+	
+	var3 = names[i] + &quot;_throughtput&quot;
+	props.put(var3, String.valueOf(oneVUOperationsPerMinNumber))
+
+	var4 = names[i] + &quot;_load_generators&quot;
+	props.put(var4, String.valueOf(loadGeneratorsNumber[i]))
+
+	props.put(names[i] + &quot;_baseline&quot;, String.valueOf(iterations[i]))
+}
+
+all_length = baseline_duration + (step_rampup + step_duration) * (steps - 1)
+props.put(&quot;test_lenght&quot;, (all_length * 1000).toString());
+for (i = 1; i &lt;= steps; ++i) {
+	z = steps - i + 1;
+	var4 = z + &quot;_length&quot;
+	if (i == 7)
+		l = all_length
+	else
+		l = all_length - (step_rampup + step_duration) * (steps - i - 1) - step_rampup - baseline_duration
+	props.put(var4, String.valueOf(l))
+
+	var5 = i + &quot;_init_delay&quot;
+	if (i == 1)
+		ind = 0
+	else if (i == 2)
+		ind = baseline_rampup + baseline_duration
+	else {
+		n = i-1
+		m = n + &quot;_init_delay&quot;
+		k = props.get(m) as int
+		ind = k + step_duration + step_rampup
+	}
+	props.put(var5, String.valueOf(ind))
+}
+//получение границ ступенек
+startTestTime = props.get(&quot;TESTSTART.MS&quot;) as Long
+step_start[0] = baseline_rampup;
+step_finish[0] = baseline_rampup + baseline_duration;
+
+props.put(&quot;step_start0&quot;, (new Date(step_start[0] * 1000 + startTestTime).format(&quot;yyyy-MM-dd HH:mm:ss&quot;)));
+props.put(&quot;step_finish0&quot;, (new Date(step_finish[0] * 1000 + startTestTime).format(&quot;yyyy-MM-dd HH:mm:ss&quot;)));
+
+//получаем длительность ступеней
+props.put (&quot;step1_duration_in_min&quot;, new Date(baseline_duration * 1000 - (3 * 3600000)).format(&quot;HH:mm:ss&quot;) );
+props.put (&quot;step2-7_duration_in_min&quot;, new Date(step_duration * 1000 - (3 * 3600000)).format(&quot;HH:mm:ss&quot;) );
+
+log.info(&quot;Начало ступени 0 &quot;  + props.get(&quot;step_start0&quot;));
+log.info(&quot;Конец ступени 0 &quot; + props.get(&quot;step_finish0&quot;));
+
+for (i = 1; i &lt; 7; ++i)
+{
+	step_start[i] = step_finish[i-1] + step_rampup ;	
+	step_finish[i] = step_start[i] + step_duration; 
+	props.put(&quot;step_start&quot;+i, (new Date(step_start[i] * 1000 + startTestTime).format(&quot;yyyy-MM-dd HH:mm:ss&quot;)));
+	props.put(&quot;step_finish&quot;+i, (new Date(step_finish[i] * 1000 + startTestTime ).format(&quot;yyyy-MM-dd HH:mm:ss&quot;)));
+	log.info(&quot;Начало ступени &quot; + i + &quot; - &quot; + props.get(&quot;step_start&quot;+i));
+	log.info(&quot;Конец ступени &quot; + i + &quot; - &quot; + props.get(&quot;step_finish&quot;+i));	
+}
+
+log.info(&quot;===========================\n\n\n&quot;);
+
+currentTime = System.currentTimeMillis()
+a = (startTestTime - currentTime) / 1000
+for (int i = 1; i &lt; 8; ++i){
+	start = props.get(i+&quot;_init_delay&quot;) as int
+	if (i == 7){
+		props.put(&quot;currentStepNumber&quot;,String.valueOf(i))
+		break
+	}
+	k = i + 1
+	finish = props.get(k+&quot;_init_delay&quot;) as int
+	if (a &gt;= start &amp;&amp; a &lt;= finish){
+		props.put(&quot;currentStepNumber&quot;,String.valueOf(i))
+		break
+	}
+}</stringProp>
         </JSR223Sampler>
         <hashTree/>
         <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Debug Sampler" enabled="true">
@@ -613,35 +848,22 @@ for (JMeterTreeNode node : guiPackage.getTreeModel().getNodesOfType(Clearable.cl
                 <stringProp name="ActionProcessor.duration">0</stringProp>
               </TestAction>
               <hashTree/>
-              <kg.apc.jmeter.samplers.DummySampler guiclass="kg.apc.jmeter.samplers.DummySamplerGui" testclass="kg.apc.jmeter.samplers.DummySampler" testname="LG is ${this_lg} " enabled="true">
-                <boolProp name="WAITING">true</boolProp>
-                <boolProp name="SUCCESFULL">true</boolProp>
-                <stringProp name="RESPONSE_CODE">200</stringProp>
-                <stringProp name="RESPONSE_MESSAGE">OK</stringProp>
-                <stringProp name="REQUEST_DATA">${this_lg}</stringProp>
-                <stringProp name="RESPONSE_DATA">Dummy Sampler used to simulate requests and responses
-without actual network activity. This helps debugging tests.</stringProp>
-                <stringProp name="RESPONSE_TIME">${__Random(50,500)}</stringProp>
-                <stringProp name="LATENCY">${__Random(1,50)}</stringProp>
-                <stringProp name="CONNECT">${__Random(1,5)}</stringProp>
-                <stringProp name="URL"></stringProp>
-                <stringProp name="RESULT_CLASS">org.apache.jmeter.samplers.SampleResult</stringProp>
-              </kg.apc.jmeter.samplers.DummySampler>
+              <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="LG is ${this_lg} " enabled="true">
+                <stringProp name="scriptLanguage">groovy</stringProp>
+                <stringProp name="parameters"></stringProp>
+                <stringProp name="filename"></stringProp>
+                <stringProp name="cacheKey">true</stringProp>
+                <stringProp name="script">1=1</stringProp>
+              </JSR223Sampler>
               <hashTree/>
             </hashTree>
-            <kg.apc.jmeter.samplers.DummySampler guiclass="kg.apc.jmeter.samplers.DummySamplerGui" testclass="kg.apc.jmeter.samplers.DummySampler" testname="LG is ${__machineName} ___ TG is ${__BeanShell(ctx.getThreadGroup().getName())} " enabled="true">
-              <boolProp name="WAITING">true</boolProp>
-              <boolProp name="SUCCESFULL">true</boolProp>
-              <stringProp name="RESPONSE_CODE">200</stringProp>
-              <stringProp name="RESPONSE_MESSAGE">OK</stringProp>
-              <stringProp name="REQUEST_DATA">${this_lg}</stringProp>
-              <stringProp name="RESPONSE_DATA"></stringProp>
-              <stringProp name="RESPONSE_TIME">${__Random(50,500)}</stringProp>
-              <stringProp name="LATENCY">${__Random(1,50)}</stringProp>
-              <stringProp name="CONNECT">${__Random(1,5)}</stringProp>
-              <stringProp name="URL"></stringProp>
-              <stringProp name="RESULT_CLASS">org.apache.jmeter.samplers.SampleResult</stringProp>
-            </kg.apc.jmeter.samplers.DummySampler>
+            <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="LG is ${__machineName} ___ TG is ${__BeanShell(ctx.getThreadGroup().getName())} " enabled="true">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">1=1</stringProp>
+            </JSR223Sampler>
             <hashTree/>
           </hashTree>
         </hashTree>
@@ -673,35 +895,22 @@ without actual network activity. This helps debugging tests.</stringProp>
                 <stringProp name="ActionProcessor.duration">0</stringProp>
               </TestAction>
               <hashTree/>
-              <kg.apc.jmeter.samplers.DummySampler guiclass="kg.apc.jmeter.samplers.DummySamplerGui" testclass="kg.apc.jmeter.samplers.DummySampler" testname="LG is ${this_lg} " enabled="true">
-                <boolProp name="WAITING">true</boolProp>
-                <boolProp name="SUCCESFULL">true</boolProp>
-                <stringProp name="RESPONSE_CODE">200</stringProp>
-                <stringProp name="RESPONSE_MESSAGE">OK</stringProp>
-                <stringProp name="REQUEST_DATA">${this_lg}</stringProp>
-                <stringProp name="RESPONSE_DATA">Dummy Sampler used to simulate requests and responses
-without actual network activity. This helps debugging tests.</stringProp>
-                <stringProp name="RESPONSE_TIME">${__Random(50,500)}</stringProp>
-                <stringProp name="LATENCY">${__Random(1,50)}</stringProp>
-                <stringProp name="CONNECT">${__Random(1,5)}</stringProp>
-                <stringProp name="URL"></stringProp>
-                <stringProp name="RESULT_CLASS">org.apache.jmeter.samplers.SampleResult</stringProp>
-              </kg.apc.jmeter.samplers.DummySampler>
+              <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="LG is ${this_lg} " enabled="true">
+                <stringProp name="scriptLanguage">groovy</stringProp>
+                <stringProp name="parameters"></stringProp>
+                <stringProp name="filename"></stringProp>
+                <stringProp name="cacheKey">true</stringProp>
+                <stringProp name="script">1=1</stringProp>
+              </JSR223Sampler>
               <hashTree/>
             </hashTree>
-            <kg.apc.jmeter.samplers.DummySampler guiclass="kg.apc.jmeter.samplers.DummySamplerGui" testclass="kg.apc.jmeter.samplers.DummySampler" testname="LG is ${__machineName} ___ TG is ${__BeanShell(ctx.getThreadGroup().getName())} " enabled="true">
-              <boolProp name="WAITING">true</boolProp>
-              <boolProp name="SUCCESFULL">true</boolProp>
-              <stringProp name="RESPONSE_CODE">200</stringProp>
-              <stringProp name="RESPONSE_MESSAGE">OK</stringProp>
-              <stringProp name="REQUEST_DATA">${this_lg}</stringProp>
-              <stringProp name="RESPONSE_DATA"></stringProp>
-              <stringProp name="RESPONSE_TIME">${__Random(50,500)}</stringProp>
-              <stringProp name="LATENCY">${__Random(1,50)}</stringProp>
-              <stringProp name="CONNECT">${__Random(1,5)}</stringProp>
-              <stringProp name="URL"></stringProp>
-              <stringProp name="RESULT_CLASS">org.apache.jmeter.samplers.SampleResult</stringProp>
-            </kg.apc.jmeter.samplers.DummySampler>
+            <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="LG is ${__machineName} ___ TG is ${__BeanShell(ctx.getThreadGroup().getName())} " enabled="true">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">1=1</stringProp>
+            </JSR223Sampler>
             <hashTree/>
           </hashTree>
         </hashTree>
