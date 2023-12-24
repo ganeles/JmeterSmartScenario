@@ -1,175 +1,181 @@
 # JmeterSmartScenario
 
-Этот модуль позволяет "в два клика" менять параметры вашего Jmeter-теста.  
-Достаточно перед запуском теста проверить (а при необходимости - изменить) следующие переменные:  
+## [(Русская версия описания доступна по этой ссылке)](./README-RUS.md)
 
-Первая ступень теста:
-1) Время разгона на первую ступень теста
-2) Процент профиля на первой ступени теста
-3) Длительность первой ступени теста
-  
-Остальные ступени теста:
+This module allows you to change the parameters of your Jmeter test in two clicks.
+Before running the test, it is enough to check (and, if necessary, change) the following variables:
 
-4) Время разгона на каждую следующую ступень теста
-5) Процент профиля, добавляющийся на каждой следующей ступени теста
-6) Длительность каждой следующей ступени теста
+First stage of the test:
+1) RampUp time to the first stage of the test
+2) Profile percentage at the first stage of the test
+3) Duration of the first stage of the test
 
-![Параметры теста](./images/TestParam.png "Параметры теста")
+Other stages of the test:
 
-![Параметры теста-пояснение](./images/pic1.png "Параметры теста-пояснение")
-После этого запустить тест и наслаждаться результатами.
+4) RampUp time for each next test stage
+5) Profile percentage added at each subsequent test step
+6) Duration of each next test step
 
-![Результаты теста](./images/pic2.png "Результаты теста")
+![Test Params](./images/TestParam.png "Test Params")
 
-# Зачем это нужно?
-Мы запускаем множество тестов.  
-Чаще всего это тесты на "Поиск максимальной производительности".  
-Это означает, что мы должны увеличивать нагрузку на систему до тех пор, пока не будут нарушены критерии успешной работы системы (обычно это время отклика или процент ошибок).  
-Но большинство систем, которые мы тестируем, уже используются на проде. Или мы тестируем их не в первый раз.  
-А это значит, что мы и так знаем: нагрузку на уровне Х система держит. А вот насколько бОльшую нагрузку выдержит система - это вопрос, ответ на который нужно найти в ходе теста.  
-Для тестировщика это означает, что тест должен начаться с подачи той нагрузки, с которой система заведомо справляется (например, 100% продуктивной нагрузки) - и "шагать" наверх.  
-Также стоит объяснить, почему мы увеличиваем нагрузку ступеньками: дело в том, что иногда показатели системы меняются не сразу после увеличения нагрузки, а с некоторой задержкой. Участки теста с стабильной нагрузкой лучше подходят для анализа поведения системы под такой нагрузкой.  
-Кроме того, зачастую нам бывает и вовсе не интересно, как ведёт себя система под возрастающей нагрузкой, ведь на проде нагрузка обычно увеличивается в течение нескольких часов. Однако в тестах мы увеличиваем нагрузку гораздо быстрее, и, как следствие, вовсе не анализируем поведение системы в момент разгона на ступеньки. Даже наоборот, анализируем только часть ступенек нагрузки - когда работа системы стабилизировалась после увеличения нагрузки (а для исследований быстрого роста нагрузки служит отдельный вид тестов - стресс-тесты).
+![Test Params-description](./images/pic1.png "Test Params-description")
+After that, run the test and enjoy the results.
 
-Но, хотя наши тесты похожи, они зачастую различаются: 
-* Новый релиз тестируемой системы стал более производительным, и теперь тест можно начинать сразу со 150% продуктивной нагрузки. 
-* Увеличились требования к точности результатов, и теперь нам нужны ступеньки не по 10% профиля, а по 5%. Или наоборот, по 20%.
-* Система долго стабилизируется, и нужно увеличить длительность ступенек с 5 до 15 минут
-* и так далее...
+![Test results](./images/pic2.png "Test results")
 
-Раньше каждый раз, когда нам был нужен новый тест - приходилось менять множество настроек в тест-планах Jmeter.  
-Это было долго и неудобно, кроме того, каждый раз была вероятность человеческой ошибки.
+# Why do you need it?
+We run a lot of tests.
+Most often these are "Search for Maximum Performance" tests.
+This means that we must increase the load on the system until the SLA (usually response time or error rate) are violated.
+But most of the systems we test are already used in production. Or this is not the first time we are testing them.
+This means that we already know: the system is able to hold the load at X operation per second. But how much more load the system can withstand is a question that needs to be answered during the test.
+For a tester, this means that the test should start by applying the load that the system can obviously handle (for example, 100% of the productive load) - and “step up” to the top.
 
-С использованием JmeterSmartScenario достаточно указать параметры ДАННОГО теста - и все требуемые настройки будут рассчитаны автоматически, а вам остаётся только наблюдать за ходом теста.
+It is also worth explaining why I increase the load in steps: the fact is that sometimes the system’s performance does not change immediately after increasing the load, but with some delay. Test sections with a stable load are better suited for analyzing the behavior of the system under such load.  
+In addition, we are often not at all interested in how the system behaves under increasing load, because in production the load usually increases within a few hours. However, in tests we increase the load much faster, and, as a result, we do not analyze the behavior of the system at the moment of acceleration by steps. On the contrary, we analyze only part of the load steps - when the operation of the system has stabilized after an increase in load (and for studies of rapid load growth, a separate type of test is used - stress tests).
 
-# Как это работает?
-После запуска теста срабатывает setUp Thread Group, содержащая Groovy-скрипт, который:
-1) Считывает построчно файл с "профилем", в котором указаны постоянные параметры:
-* Имя операции
-* Количество операций в час для 100% профиля
-* Время, за которое операция успевает выполниться (стоит указывать с запасом, т.к. под нагрузкой время выполнения обычно увеличивается)
-* Количество генераторов нагрузки, с которых будет выполняться эта операция (об этом я расскажу подробнее ниже).
+But although our tests are similar, they are often different:
+* The new release of the system under test has become more productive, and now the test can be started immediately with 150% of the productive load.
+* The requirements for the accuracy of the results have increased, and now we need steps not by 10% of the profile, but by 5%. Or vice versa, 20%.
+* The system takes a long time to stabilize, and it is necessary to increase the duration of the steps from 5 to 15 minutes
+* and so on...
 
-2) Рассчитываются количество потоков, необходимых для подачи заданной нагрузки а также интенсивность, с какой должен работать каждый поток.
-Рассчитанные параметры кладутся в Property с именами, состоящими из имени операции и суффикса:
+Previously, every time we needed a new test, we had to calculate and change many settings in the Jmeter test plans.
+It was long and inconvenient, and each time there was a possibility of human error.
 
-* threadGroup_start - количество потоков на первой ступени теста
-* threadGroup_add_thread - количество потоков, добавляемых на каждой ступени теста
-* threadGroup_throughtput - количество операций, выполняемых в минуту каждым потоком
+Using JmeterSmartScenario, you just need to specify the parameters of THIS test - and all the required settings will be calculated automatically, and you just have to watch the progress of the test.
 
-Также рассчитываются и кладутся в Property параметры, одинаковые для всех тред-групп:
-* #_init_delay - время с момента старта теста до начала каждой ступени теста
-* #_length - время с начала каждой ступени до конца теста
+# But Open Model Thread Group does the same. In which cases do we need your solution?
+The "[Open Model Thread Grpoup](https://jmeter.apache.org/usermanual/component_reference.html#Open_Model_Thread_Group)" simulate OPEN MODEL. This means that each iteration is the "first iteration of a new user" (all data will be lost between iterations). 
+For Jmeter, this means that elements like **Once Only Controller** will be executed at each iteration, and the **Cookie/Cache managers** will clean their data at each iteration.
+If these conditions contradict your test model, try to use my solution.
 
-3) Эти параметры используются в настройках тест-плана:
-* Для управления количеством потоков используется Ultimate Thread Group (устанавливается в составе плагина [Custom Thread Groups](https://jmeter-plugins.org/wiki/UltimateThreadGroup/))
-* Для управления интенсивностью работы каждого потока используется Constant Throughput Timer (входит в состав Jmeter)
 
-# Как мне начать использовать "JmeterSmartScenario"?
-1) Установите UltimateThreadGroup (советую поставить [JmeterPluginManager](https://jmeter-plugins.org/wiki/PluginsManager/), и он сам скачает необходимые плагины при открытии тест-плана)
-2) Скачайте в одну папку файлы: 
-* **JmeterSmartScenario.jmx** (в предоставленном примере используются 2 тред-группы)
+# How it works?
+After running the test, setUp Thread Group is triggered, containing a Groovy script that:
+1) Reads a file **“profile.txt”**, which contains constant parameters:
+* Operation name
+* Number of operations per hour for 100% profile
+* The time during which the operation can be completed (it should be specified with a margin, since the execution time usually increases under load)
+* The number of load generators from which this operation will be performed (I will talk about this below in more details).
+
+2) The number of threads required to supply a given load is calculated, as well as the intensity with which each thread must work. The calculated parameters are placed in Property with names consisting of the operation name and suffix:
+* threadGroup_start - number of threads in the first stage of the test
+* threadGroup_add_thread - number of threads added at each test stage
+* threadGroup_throughtput - number of operations performed per minute by each thread
+
+Parameters that are the same for all thread groups are also calculated and placed in Property:
+
+* #_init_delay - time from the start of the test to the start of each test stage
+* #_length - time from the beginning of each stage to the end of the test
+
+3) These parameters are used in the test plan settings:
+* To control the number of threads, the Ultimate Thread Group is used (installed as part of the Custom Thread Groups plugin )
+* To control the intensity of each thread, a Constant Throughput Timer is used (part of Jmeter)
+
+# How do I start using "JmeterSmartScenario"?
+1) Install UltimateThreadGroup (I recommend installing [JmeterPluginManager](https://jmeter-plugins.org/wiki/PluginsManager/), and it will download the necessary plugins when you open the test plan)
+2) Download the following files into one folder:
+* **JmeterSmartScenario.jmx** (the example provided uses 2 thread groups)
 * **profile.txt**
 
-3) Откройте файл **profile.txt**, укажите ваши данные: имена операций для начала предлагаю оставить как есть, а остальные параметры укажите ваши:
-* Интенсивность (оп/ч)
-* Время выполнения операций (в секундах)
-* Количество генераторов нагрузки (если у вас НЕ распределённый тест - укажите 1)
+3) Open the **profile.txt**, enter your data: to begin with, I suggest leaving the operation names as they are, and enter the rest of the parameters as yours:
+* Rate (operation per hour)
+* Operation response time (in seconds)
+* Number of load generators (if you do NOT have a distributed test, enter 1)
 
-![профиль.txt](./images/profile.png "профиль.txt")
+![profile](./images/profile.png "profile.txt")
 
-4) Откройте **JmeterSmartScenario.jmx** и укажите путь к файлу profile.txt. Обратите внимание, нужно использовать прямой слеш (например: c:/jmeter/profile.txt).
-5) В примерах тред-групп "uc_01_Login" и "uc_02_Payment" ниже семплера "Flow Action Control" добавьте свои семплеры, транзакции и так далее.  
-Кстати, я все скрипты сохраняю в отдельные файлы как "Test Fragment", а в JmeterSmartScenario.jmx добавляю только Include Controller, ссылающийся на файл с конкретным скриптом. Это позволяет мне использовать их в различных сценариях и переиспользовать код.  
-![Семплеры.txt](./images/AddSamplers.png "Семплеры")
+4) Open **JmeterSmartScenario.jmx** и укажите путь к файлу profile.txt. and specify the path to the profile.txt file. Please note that you must use a forward slash (for example: c:/jmeter/profile.txt).
+5) In the example thread groups "uc_01_Login" and "uc_02_Payment" below the "Flow Action Control" sampler, add your samplers, transactions, and so on.
+By the way, I save all the scripts in separate files as “Test Fragment”, and in JmeterSmartScenario.jmx I add only the Include Controller, which refers to the file with a specific script. This allows me to use them in different scenarios and reuse the code.
+![samplers](./images/AddSamplers.png "Samplers")
 
-# Ок, а как мне добавить новые тред-группы в "JmeterSmartScenario"?
-О-ох. 
-Достаточно удобного способа я и сам не придумал.
+# Ok, how can I add new thread groups to "JmeterSmartScenario"?
+Ooh. I haven’t come up with a convenient enough method myself.
 
-Порядок действий такой:
-1) Добавьте строчку в файл **profile.txt**, укажите данные ВАШЕГО профиля (через запятую).
-2) Скопируйте и вставьте одну из имеющихся тред-групп (лучше сразу переименовать её)
-3) В настройках UltimateThreadGroup измените префикс в имени переменных в столбце "Start Thread Count": укажите имя операции так, как оно написано в файле profile.txt. Суффиксы \_start и \_add_thread оставьте. 
-Обратите внимание: Как  называется сама тред-группа - не важно!
-4) Разверните дерево: [ тред-группа => Flow Control Action => Constant Throughput Timer ], измените префикс в имени переменной: укажите имя операции так, как оно написано в файле profile.txt. Суффикс \_throughtput оставьте.
+The procedure is as follows:
+1) Add a line to the **profile.txt**, specify YOUR profile information (separated by commas).
+2) Copy and paste one of the existing thread groups (it’s better to rename it right away)
+3) In the UltimateThreadGroup settings, change the prefix in the variable name in the "Start Thread Count" column: specify the operation name as it is written in the profile.txt file. Leave the _start and _add_thread suffixes. Please note: It doesn’t matter what the thread group itself is called!
+4) Expand the tree: [ thread group => Flow Control Action => Constant Throughput Timer ], change the prefix in the variable name: specify the name of the operation as it is written in the profile.txt file. Leave the _throughtput suffix.
 
 ![](./images/newScript.gif)
-([вот видео процесса в хорошем качестве](https://github.com/ganeles/JmeterSmartScenario/raw/main/images/newScript.mp4))
+([here is a video of the process in good quality](https://github.com/ganeles/JmeterSmartScenario/raw/main/images/newScript.mp4))
 
-# Как запустить тест стабильности (без ступенек)?
-Просто приравняйте к нулю параметры, описывающие работу ступенек.  
-В JmeterSmartScenario есть пример: отключённый модуль User Defined Variable с именем **Глобальные параметры_Stub**.
+# How to run a stability test (without steps)?
+Simply set the parameters describing the operation of the steps to zero. 
+JmeterSmartScenario has an example: a disabled User Defined Variable module named **Global Parameters_Stub**.
 
-Вообще, можно держать несколько User Defined Variable с разными параметрами и включать-выключать их по необходимости.  
-Главное, чтобы одновременно был включён только один.  
-У меня разные UDV даже ссылаются на разные файлы profile.txt: профиль прошлого года, профиль этого года, профиль, описывающий нагрузку зарплатного дня...
+In general, you can keep several **User Defined Variables** with different parameters and turn them on and off as needed.
+The main thing is that only one is turned on at a time.
+I have different UDVs even refer to different **profile.txt** files: last year’s profile, this year’s profile, a profile describing the workload of the payday....
 
-# Что по поводу распределённых тестов?
-Jmeter так устроен, что при запуске распределённого теста на всех jmeter-server запускается один и тот же JMX-файл.  
-Это нужно учитывать при расчёте параметров: ведь с двух генераторов будет подаваться вдвое больше нагрузки, чем с одного.  
-Для этого служит параметр в файле **profile.txt** - интенсивность нагрузки (оп/ч) будет разделена на количество генераторов, чтобы все вместе они подали нужную нагрузку.  
-
-
-# Как запустить тест из консоли?
-Всё тоже самое просто параметры нужно не вписывать в модуль User Defined Variable, а передать при запуске теста.  
-Ну а в User Defined Variable нужно принять переданные при запуске параметры :)  
-Я всё подготовил:  
-1) Активируйте модуль User Defined Variable, который называется "Глобальные параметры_ConsoleRun", а остальные аналогичные UDV отключите.  
-2) При запуске теста укажите все те же параметры с использованием ключа -JимяПараметра. 
-
-Пример такого запуска есть в файле **consoleRun.bat**
-
-![Запуск из консоли](./images/ConsoleRun.png)
-
-# В тесте только 7 ступенек. Хочу больше / меньше!
-Если нужно **меньше** ступенек - достаточно удалить лишние строчки из каждой UltimateThreadGroup.  
-
-Если нужно **больше** ступенек - нужно добавить строки в каждой UltimateThreadGroup, корректируя имена переменных в соответствии с номером ступени.  
-Кроме того, потребуется доработать groovy-скрипт, рассчитывающий параметры теста так, чтобы он расчитывал всё, что вам требуется .  
-Сейчас количество ступенек захардкожено потому, что всё равно для изменения количества ступеней нужно вручную менять настройки UTG.  
+# What about distributed tests?
+Jmeter is designed in such a way that when a distributed test is launched, the same JMX file is launched on all jmeter-servers.
+This must be taken into account when calculating parameters: after all, two generators will supply twice as much load as one.
+For this purpose, use the parameter in the **profile.txt** file - the load rate (operation per hour) will be divided by the number of generators, so that all of them together supply the required load.
 
 
-# А что это за отключённые элементы внутри Once Only Controller?
-Это штуки, которые здорово помогают мне в моей работе, но, может, и не пригодятся вам.  
+# How to run a test from the console?
+Everything is the same, just the parameters do not need to be entered into the User Defined Variable module, but rather transferred when running the test.
+Well, in the User Defined Variable you need to accept the parameters passed at startup :)
+I prepared everything:
+1) Activate the User Defined Variable module, which is called "Global Parameters_ConsoleRun", and disable the rest of the similar UDVs.
+2) When running the test, specify all the same parameters using the -JParameterName key.
 
-1) RandomPause (чтобы много потоков не начинали работу в один момент). 
-При запуске теста может так сложиться, что много потоков стартуют одновременно.  
-Это приводит к тому, что нагрузка на систему неравномерно распределяется по тесту:  
-* Сперва все потоки выполняют операции;
-* Потом все они ждут, пока отработает Constant Throughput Timer;
-* Потом опять все вместе выполняют операцию;
+An example of such a launch is in the file **consoleRun.bat**
 
-Это искажает результаты теста.  
-Чтобы избежать таких ситуаций, я добавил рандомную паузу: для каждого потока она задерживает выполнение ПЕРВОЙ итерации на случайное время в промежутке от 0 до 30 секунд.  
-В результате нагрузка на систему становится более равномерной, ведь теперь потоки начинают работать в разное время, а значит и все следующие их итерации должны выполняться в разные моменты.  
+![ConsoleRun](./images/ConsoleRun.png)
 
-2) **Низкоинтенсивный скрипт (только на LG_Slow)** и **Высокоинтенсивный скрипт (всюду, кроме LG_Slow)**.
-Это касается ТОЛЬКО распределённых тестов: если у одного скрипта в сценарии очень низкая интенсивность, а у другого - очень высокая - получается, что:
-- С одной стороны, из-за высокоинтенсивного скрипта нам приходится использовать распределённый тест (один генератор не справляется)
-- С другой стороны, скрипт, который и так работает с низкой интенсивностью, будет "размазан" по нескольким генераторам. А это не очень хорошо: чем меньше нагрузки придётся на каждый генератор, тем больше потоков будут эту нагрузку подавать (актуально для тестов со ступеньками). Чем больше потоков её подают, тем реже они выполняют операции.
+# There are only 7 steps in the test. I want more/less!
+If you need **меньше** steps, just remove the extra lines from each UltimateThreadGroup.  
 
-Например, если:
-* Базовая интенсивность = 100 операций в час
-* В ходе теста нужно сперва подать 100% нагрузки а потом увеличивать нагрузку до 160% ступеньками по 10% (то есть сделать ступеньки 100%, 110%, 120%, 130%, 140%, 150%, 160%)
-* Время выполнения операции не больше 10 секунд
-* Мы запускаем тест с 1 генератора нагрузки
+If you need **больше** steps, you need to add lines in each UltimateThreadGroup, adjusting the variable names according to the number of the step.
+In addition, you will need to modify the groovy script that calculates the test parameters so that it calculates everything you need.
+Now the number of steps is hardcoded because to change the number of steps you still need to manually change the UTG settings. 
 
-Получится, что:
-* Нам потребуется 16 потоков (10 потоков подают 100% нагрузки, и 6 раз мы добавляем по 1 потоку, чтобы увеличить нагрузку на 10%)
-* Каждый поток будет выполнять операции раз в 6 минут. 
 
-Если же генераторов будет два - количество потоков увеличится вдвое, а значит частота выполнения операций вдвое упадёт (каждый поток будет выполнять операции раз в 12 минут).  
-Это значит, что длина ступеней теста должна быть не менее 12 минут, иначе нагрузка будет увеличиваться неравномерно.  
+# What are these disabled elements inside the Once Only Controller?
+These are things that help me a lot in my work, but may not be useful to you.
 
-Что же делать?
-Я решил эту проблему следующим образом:
-1) Выделяю один jmeter-server для работы "низкоинтенсивных" скриптов.
-2) Все скрипты запускаются на всех jmeter-server
-3) НО! При запуске каждого потока один раз отрабатывает Once-only Controller, который проверяет - а должен ли этот скрипт работать на этом jmeter-server. Если да - всё в порядке. А если нет - поток останавливается сразу же после запуска.
-4) jmeter-server, выделенный для "низкоинтенсивных" скриптов, указывается в UDV в параметре "LG_Slow" (LG расшифровывается как Load Generator)
+1) RandomPause (to prevent many threads from starting work at the same time). When running a test, it may happen that many threads start at the same time.
+This results in the system load being unevenly distributed across the test: 
+* First, all threads perform operations;
+* Then they all wait for the **Constant Throughput Timer** to run;
+* Then again everyone performs the operation together;
 
-## История изменений
+This distorts the test results.
+To avoid such situations, I added a random pause: for each thread, it delays the execution of the FIRST iteration for a random time in the range from 0 to 30 seconds.
+As a result, the load on the system becomes more uniform, because now the threads start working at different times, which means that all their next iterations must be executed at different times.
+
+2) **Low-intensity script (only on LG_Slow)** и **Высокоинтенсивный скрипт (всюду, кроме LG_Slow)**.
+
+This applies ONLY to distributed tests: if one script in a scenario has a very low intensity, and another has a very high intensity, it turns out that:
+* On the one hand, due to the high-intensity script, we have to use a distributed test (one generator cannot cope)
+* On the other hand, a script that already works with low intensity will be “spread out” across several generators. And this is not very good: the less load there is on each generator, the more threads will supply this load (relevant for tests with steps). The more threads supply it, the less frequently they perform operations.
+
+For example, if:
+* Basic intensity = 100 operations per hour
+* During the test, you first need to apply 100% of the load and then increase the load to 160% in steps of 10% (that is, make steps of 100%, 110%, 120%, 130%, 140%, 150%, 160%)
+* The operation time is no more than 10 seconds
+* We run the test from 1 load generator
+
+It turns out that:
+* We will need 16 threads (10 threads supply 100% of the load, and 6 times we add 1 thread to increase the load by 10%)
+* Each thread will perform operations once every 6 minutes.
+
+If there are two generators, the number of threads will double, which means the frequency of operations will drop by half (each thread will perform operations once every 12 minutes).
+This means that the length of the test steps must be at least 12 minutes, otherwise the load will increase unevenly.
+
+What to do? I solved this problem as follows:
+1) I allocate one jmeter-server for running “low-intensity” scripts.
+2) All scripts run on all jmeter-servers
+3) BUT! When each thread is launched, the Once-only Controller executes once, which checks whether this script should work on this jmeter-server. If yes, everything is fine. And if not, the thread stops immediately after starting.
+4) jmeter-server, dedicated for "low-intensity" scripts, is specified in the UDV in the "LG_Slow" parameter (LG stands for Load Generator)
+
+## History of changes
 2021-07-25
-* Убрал зависимость от Dummy Sampler
-* Внёс groovy-скрипт прямо в тест-план (чтобы сократить проблемы с указанием путей к файлам)
+* Removed dependency on Dummy Sampler
+* Added a groovy script directly to the test plan (to reduce problems with specifying file paths)
+* Added English version of ReadMe
