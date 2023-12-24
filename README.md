@@ -60,16 +60,16 @@ After running the test, setUp Thread Group is triggered, containing a Groovy scr
 * The number of load generators from which this operation will be performed (I will talk about this below in more details).
 
 2) The number of threads required to supply a given load is calculated, as well as the intensity with which each thread must work. The calculated parameters are placed in Property with names consisting of the operation name and suffix:
-* threadGroup_start - number of threads in the first stage of the test
-* threadGroup_add_thread - number of threads added at each test stage
-* threadGroup_throughtput - number of operations performed per minute by each thread
+* useCase_start - number of threads in the first stage of the test
+* useCase_add_thread - number of threads added at each test stage
+* useCase_throughtput - number of operations performed per minute by each thread
 
 Parameters that are the same for all thread groups are also calculated and placed in Property:
 
-* #_init_delay - time from the start of the test to the start of each test stage
-* #_length - time from the beginning of each stage to the end of the test
+* #_init_delay - time from the start of the test to the start of each test stage. # means number of stage.
+* #_length - time from the beginning of each stage to the end of the test. # means number of stage.
 
-3) These parameters are used in the test plan settings:
+3) These elements are used in the test plan settings:
 * To control the number of threads, the Ultimate Thread Group is used (installed as part of the Custom Thread Groups plugin )
 * To control the intensity of each thread, a Constant Throughput Timer is used (part of Jmeter)
 
@@ -86,7 +86,7 @@ Parameters that are the same for all thread groups are also calculated and place
 
 ![profile](./images/profile.png "profile.txt")
 
-4) Open **JmeterSmartScenario.jmx** и укажите путь к файлу profile.txt. and specify the path to the profile.txt file. Please note that you must use a forward slash (for example: c:/jmeter/profile.txt).
+4) Open **JmeterSmartScenario.jmx** and specify the path to the profile.txt file. Please note that you must use a forward slash (for example: c:/jmeter/profile.txt).
 5) In the example thread groups "uc_01_Login" and "uc_02_Payment" below the "Flow Action Control" sampler, add your samplers, transactions, and so on.
 By the way, I save all the scripts in separate files as “Test Fragment”, and in JmeterSmartScenario.jmx I add only the Include Controller, which refers to the file with a specific script. This allows me to use them in different scenarios and reuse the code.
 ![samplers](./images/AddSamplers.png "Samplers")
@@ -97,8 +97,8 @@ Ooh. I haven’t come up with a convenient enough method myself.
 The procedure is as follows:
 1) Add a line to the **profile.txt**, specify YOUR profile information (separated by commas).
 2) Copy and paste one of the existing thread groups (it’s better to rename it right away)
-3) In the UltimateThreadGroup settings, change the prefix in the variable name in the "Start Thread Count" column: specify the operation name as it is written in the profile.txt file. Leave the _start and _add_thread suffixes. Please note: It doesn’t matter what the thread group itself is called!
-4) Expand the tree: [ thread group => Flow Control Action => Constant Throughput Timer ], change the prefix in the variable name: specify the name of the operation as it is written in the profile.txt file. Leave the _throughtput suffix.
+3) In the UltimateThreadGroup settings, change the prefix in the variable name in the "Start Thread Count" column: specify the operation name as it is written in the profile.txt file. Leave the **_start** and **_add_thread** suffixes. Please note: It doesn’t matter what the thread group itself is called!
+4) Expand the tree: [ thread group => Flow Control Action => Constant Throughput Timer ], change the prefix in the variable name: specify the name of the operation as it is written in the **profile.txt** file. Leave the **_throughtput** suffix.
 
 ![](./images/newScript.gif)
 ([here is a video of the process in good quality](https://github.com/ganeles/JmeterSmartScenario/raw/main/images/newScript.mp4))
@@ -109,7 +109,7 @@ JmeterSmartScenario has an example: a disabled User Defined Variable module name
 
 In general, you can keep several **User Defined Variables** with different parameters and turn them on and off as needed.
 The main thing is that only one is turned on at a time.
-I have different UDVs even refer to different **profile.txt** files: last year’s profile, this year’s profile, a profile describing the workload of the payday....
+I have different UDVs even refer to different **profile.txt** files: last year’s profile, this year’s profile, a profile describing the workload of the Black Friday....
 
 # What about distributed tests?
 Jmeter is designed in such a way that when a distributed test is launched, the same JMX file is launched on all jmeter-servers.
@@ -122,16 +122,16 @@ Everything is the same, just the parameters do not need to be entered into the U
 Well, in the User Defined Variable you need to accept the parameters passed at startup :)
 I prepared everything:
 1) Activate the User Defined Variable module, which is called "Global Parameters_ConsoleRun", and disable the rest of the similar UDVs.
-2) When running the test, specify all the same parameters using the -JParameterName key.
+2) When running the test, specify all the same parameters using the -JParameterName key (**-Jbaseline_duration** for example).
 
 An example of such a launch is in the file **consoleRun.bat**
 
 ![ConsoleRun](./images/ConsoleRun.png)
 
 # There are only 7 steps in the test. I want more/less!
-If you need **меньше** steps, just remove the extra lines from each UltimateThreadGroup.  
+If you need **less** steps, just remove the extra lines from each UltimateThreadGroup.  
 
-If you need **больше** steps, you need to add lines in each UltimateThreadGroup, adjusting the variable names according to the number of the step.
+If you need **more** steps, you need to add lines in each UltimateThreadGroup, adjusting the variable names according to the number of the step.
 In addition, you will need to modify the groovy script that calculates the test parameters so that it calculates everything you need.
 Now the number of steps is hardcoded because to change the number of steps you still need to manually change the UTG settings. 
 
@@ -149,10 +149,10 @@ This distorts the test results.
 To avoid such situations, I added a random pause: for each thread, it delays the execution of the FIRST iteration for a random time in the range from 0 to 30 seconds.
 As a result, the load on the system becomes more uniform, because now the threads start working at different times, which means that all their next iterations must be executed at different times.
 
-2) **Low-intensity script (only on LG_Slow)** и **Высокоинтенсивный скрипт (всюду, кроме LG_Slow)**.
+2) **Low-intensity script (only on LG_Slow)** и **High-intensity script (Everywhere except LG_Slow)**.
 
 This applies ONLY to distributed tests: if one script in a scenario has a very low intensity, and another has a very high intensity, it turns out that:
-* On the one hand, due to the high-intensity script, we have to use a distributed test (one generator cannot cope)
+* On the one hand, due to the high-intensity script, we have to use a distributed test (one generator cannot perform entire load)
 * On the other hand, a script that already works with low intensity will be “spread out” across several generators. And this is not very good: the less load there is on each generator, the more threads will supply this load (relevant for tests with steps). The more threads supply it, the less frequently they perform operations.
 
 For example, if:
@@ -169,13 +169,14 @@ If there are two generators, the number of threads will double, which means the 
 This means that the length of the test steps must be at least 12 minutes, otherwise the load will increase unevenly.
 
 What to do? I solved this problem as follows:
-1) I allocate one jmeter-server for running “low-intensity” scripts.
+1) I allocate one jmeter-server for running all “low-intensity” scripts.
 2) All scripts run on all jmeter-servers
 3) BUT! When each thread is launched, the Once-only Controller executes once, which checks whether this script should work on this jmeter-server. If yes, everything is fine. And if not, the thread stops immediately after starting.
-4) jmeter-server, dedicated for "low-intensity" scripts, is specified in the UDV in the "LG_Slow" parameter (LG stands for Load Generator)
+4) The computer name for jmeter-server, dedicated for "low-intensity" scripts, is specified in the UDV in the "LG_Slow" parameter (LG stands for Load Generator)
 
 ## History of changes
 2021-07-25
 * Removed dependency on Dummy Sampler
 * Added a groovy script directly to the test plan (to reduce problems with specifying file paths)
+2023-12-24
 * Added English version of ReadMe
