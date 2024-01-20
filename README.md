@@ -3,7 +3,7 @@
 ## [(Русская версия описания доступна по этой ссылке)](./README-RUS.md)
 
 This module allows you to change the parameters of your Jmeter test in two clicks.
-Before running the test, it is enough to check (and, if necessary, change) the following variables:
+Before running the test, all that is required to check (and, if necessary, change) are the following variables:
 
 First stage of the test:
 1) RampUp time to the first stage of the test
@@ -27,8 +27,8 @@ After that, run the test and enjoy the results.
 We run a lot of tests.
 Most often these are "Search for Maximum Performance" tests.
 This means that we must increase the load on the system until the SLA (usually response time or error rate) are violated.
-But most of the systems we test are already used in production. Or this is not the first time we are testing them.
-This means that we already know: the system is able to hold the load at X operation per second. But how much more load the system can withstand is a question that needs to be answered during the test.
+Most of the systems we test are already used in production, or this is not the first time we are testing them.
+This means that we already know: the system is able to hold the load at X operation per second. How much more load the system can withstand is a question that needs to be answered during the test.
 For a tester, this means that the test should start by applying the load that the system can obviously handle (for example, 100% of the productive load) - and “step up” to the top.
 
 It is also worth explaining why I increase the load in steps: the fact is that sometimes the system’s performance does not change immediately after increasing the load, but with some delay. Test sections with a stable load are better suited for analyzing the behavior of the system under such load.  
